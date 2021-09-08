@@ -1,4 +1,4 @@
-# Загрузчик данных Local Pleiades
+# Тестовая среда FLAKE
 
 [Github](https://github.com/liaozhai/phr_local.git)
 
