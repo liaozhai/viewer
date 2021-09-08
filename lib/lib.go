@@ -35,7 +35,7 @@ func init() {
 	flag.StringVar(&dbPassword, "W", "postgres", "database password")
 	flag.StringVar(&dbName, "d", "", "database name")
 	flag.StringVar(&schema, "s", "geo", "schema")
-	flag.StringVar(&mvt, "f", "get_mvt", "mvt function")
+	flag.StringVar(&mvt, "f", "get_mvt_ext", "mvt function")
 	flag.UintVar(&Port, "P", 5000, "server port")
 	flag.Parse()
 	sql = fmt.Sprintf(`SELECT * FROM %s.%s($1, $2, $3, $4)`, schema, mvt)
