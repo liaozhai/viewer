@@ -13,11 +13,11 @@ import (
 func main() {
 
 	ctx := context.Background()
-	conn, err := pgxpool.Connect(ctx, lib.ConnectionString)
+	pool, err := pgxpool.Connect(ctx, lib.ConnectionString)
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close()
+	defer pool.Close()
 
 	r := gin.Default()
 
@@ -33,10 +33,28 @@ func main() {
 		c.HTML(http.StatusOK, "index.html", nil)
 	})
 
+	// stream := lib.NewServer()
+	// r.Use(stream.ServeHTTP())
+
+	// r.GET("/stream", func(c *gin.Context) {
+
+	// 	c.Stream(func(w io.Writer) bool {
+	// 		if msg, ok := <-stream.Message; ok {
+	// 			c.Writer.Header().Set("Content-Type", "text/event-stream")
+	// 			c.Writer.Header().Set("Cache-Control", "no-cache")
+	// 			c.Writer.Header().Set("Connection", "keep-alive")
+	// 			c.Writer.Header().Set("Transfer-Encoding", "chunked")
+	// 			c.SSEvent("message", msg)
+	// 			return true
+	// 		}
+	// 		return false
+	// 	})
+	// })
+
 	r.GET("/tile/:layerId/:z/:x/:y", func(c *gin.Context) {
 		var t lib.Tile
 		if c.ShouldBindUri(&t) == nil {
-			data, err := lib.Get(conn, ctx, t.LayerID, t.Z, t.X, t.Y)
+			data, err := lib.Get(pool, ctx, t.LayerID, t.Z, t.X, t.Y)
 			if err == nil {
 				c.Data(http.StatusOK, "application/octet-stream", data)
 			} else {
@@ -45,5 +63,27 @@ func main() {
 		}
 	})
 
+	// go func() {
+	// 	conn, err := pool.Acquire(context.Background())
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	defer conn.Release()
+
+	// 	_, err = conn.Exec(context.Background(), "listen viewer")
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	for {
+	// 		notification, err := conn.Conn().WaitForNotification(context.Background())
+	// 		if err != nil {
+	// 			panic(err)
+	// 		}
+	// 		stream.Message <- fmt.Sprintf(`{ "channel": "%s", "payload": "%s" }`, notification.Channel, notification.Payload)
+	// 	}
+	// }()
+
 	r.Run(fmt.Sprintf(":%d", lib.Port))
+
 }
